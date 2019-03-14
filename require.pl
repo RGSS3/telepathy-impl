@@ -1,11 +1,12 @@
 :-module(require, [
     run/1,
     run/2,
-    git/2, 
-    git/3, 
+    rgit/2, 
+    rgit/3, 
     github/1, 
     github/2]).
 
+:- use_module(library(git)).
 mkdir(A) :- exists_directory(A), !; make_directory(A).
 
 run(Fmt, Arg) :-
@@ -15,22 +16,24 @@ run(Fmt, Arg) :-
 run(Str) :-
     shell(Str).
 
-git(_, Name) :-
-    format(string(Dir), 'git/~s', [Name]),
+
+gitfolder(Name, Dir) :-
+    format(string(Dir), 'git/~s', [Name]).
+
+rgit(_, Name) :-
+    gitfolder(Name, Dir),
     exists_directory(Dir),
-    working_directory(Old, Dir),
-    run('git status', []), 
-    working_directory(_, Old),
+    is_git_directory(Dir),
     !.
 
-git(Header, Name) :-
+rgit(Header, Name) :-
     mkdir("git"),
     run('git clone ~s/~s git/~s', [Header, Name, Name]).
 
-git(Header, A, B) :- 
+rgit(Header, A, B) :- 
     format(atom(C), '~s/~s', [A, B]),
     git(Header, C).
 
-github(Name) :- git('https://github.com', Name).
-github(A, B) :- git('https://github.com', A, B).
+github(Name) :- rgit('https://github.com', Name).
+github(A, B) :- rgit('https://github.com', A, B).
 
